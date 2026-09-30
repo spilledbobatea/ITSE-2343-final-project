@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:friend_grid/home_page.dart';
+import 'package:friend_grid/add_friends_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,34 +32,46 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    CurrentPage(text: "Home"),
-    CurrentPage(text: "Profile"),
-    CurrentPage(text: "Add Friends"),
-    CurrentPage(text: "Edit Schedules"),
-  ];
+  final List<Friend> _friends = [];
+
+  void _addFriend(Friend friend) {
+    setState(() {
+      _friends.add(friend);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      HomePage(friends: _friends),
+      CurrentPage(text: "Profile"),
+      AddFriendPage(onFriendAdded: _addFriend),
+      CurrentPage(text: "Edit Schedules"),
+    ];
+
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text("Friend Grid")
+        title: Text("Friend Grid"),
+        actions: [
+          Builder(builder: (context) => IconButton(
+            onPressed: () => Scaffold.of(context).openEndDrawer(),
+            icon: const Icon(Icons.menu)
+            ),
+          ),
+        ],
       ),
-      body: _pages[_currentIndex],
+      body: pages[_currentIndex],
       // Navigation Drawer
       endDrawer: NavigationDrawer(
+        selectedIndex: _currentIndex,
         onDestinationSelected: (value) {
           setState(() {
             _currentIndex = value;
           });
-          _scaffoldKey.currentState?.closeEndDrawer();
+          Navigator.of(context).pop();
         },
-        selectedIndex: _currentIndex,
         children: [
           DrawerHeader(
             child: Row(
