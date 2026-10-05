@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Friend {
-  final String name;
-  final String bday;
-
-  Friend({required this.name, required this.bday});
-}
-
 class AddFriendPage extends StatefulWidget {
-  final Function(String) onFriendAdded;
+  final Function(String, DateTime?) onFriendAdded;
 
   const AddFriendPage({super.key, required this.onFriendAdded});
 
@@ -17,24 +10,33 @@ class AddFriendPage extends StatefulWidget {
 }
 
 class _AddFriendPageState extends State<AddFriendPage> {
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _numberController = TextEditingController();
+  DateTime? _selectedBday;
 
-  void _submitForm() {
-   if (_formKey.currentState!.validate()) {
-     final newFriend = Friend(
-       name: _nameController.text.trim(),
-       bday: _numberController.text.trim()
-     );
+  Future<void> _pickBday(BuildContext context) async {
+    final picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime(2026, 1, 1),
+        firstDate: DateTime(2026, 1, 1),
+        lastDate: DateTime(2026, 1, 31),
+    );
+    if (picked !=null) {
+      setState(() {
+        _selectedBday = picked;
+      });
+    }
+  }
 
-     widget.onFriendAdded(newFriend as String);
-
+  void _submit() {
+    final name = _nameController.text.trim();
+   if (name.isNotEmpty) {
+     widget.onFriendAdded(name, _selectedBday);
      _nameController.clear();
-     _numberController.clear();
-
+     setState(() {
+       _selectedBday = null;
+     });
      ScaffoldMessenger.of(context).showSnackBar(
-       SnackBar(content: Text("${newFriend.name} added!")),
+       SnackBar(content: Text("Added $name to your friends!")),
      );
    }
   }
@@ -42,7 +44,6 @@ class _AddFriendPageState extends State<AddFriendPage> {
   @override
   void dispose() {
     _nameController.dispose();
-    _numberController.dispose();
     super.dispose();
   }
 
@@ -50,58 +51,46 @@ class _AddFriendPageState extends State<AddFriendPage> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text("Add a Friend", style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 16),
-            TextFormField(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+            TextField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: "Friend's Name",
+                labelText: 'Friend name',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person)
+                prefixIcon: Icon(Icons.person),
               ),
-              keyboardType: TextInputType.name,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return "Please enter a name";
-                } else {
-                  return null;
-                }
-              },
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _numberController,
-              decoration: const InputDecoration(
-                  labelText: "Friend's Number",
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person)
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return "Please enter a number";
-                } else {
-                  return null;
-                }
-              },
+            Row (
+              children: [
+                Expanded(
+                    child: Text(
+                      _selectedBday == null
+                      ? "No birthday selected"
+                      : "Birthday: ${_selectedBday!.month}/${_selectedBday!.day}/${_selectedBday!.year}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.cake_rounded),
+                  label: const Text("Pick birthday"),
+                  onPressed: () => _pickBday(context),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _submitForm,
-              icon: const Icon(Icons.add),
-              label: const Text("Add Friend"),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12)
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text("Add Friend"),
+                onPressed: _submit
               ),
             )
-          ],
-        )
-      ),
+        ]
+      )
     );
   }
 }
