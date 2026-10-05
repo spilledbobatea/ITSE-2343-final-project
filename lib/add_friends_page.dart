@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class Friend {
   final String name;
-  final String number;
+  final String bday;
 
-  Friend({required this.name, required this.number});
+  Friend({required this.name, required this.bday});
 }
 
 class AddFriendPage extends StatefulWidget {
-  final Function(Friend) onFriendAdded;
+  final Function(String) onFriendAdded;
 
   const AddFriendPage({super.key, required this.onFriendAdded});
 
@@ -25,10 +25,10 @@ class _AddFriendPageState extends State<AddFriendPage> {
    if (_formKey.currentState!.validate()) {
      final newFriend = Friend(
        name: _nameController.text.trim(),
-       number: _numberController.text.trim()
+       bday: _numberController.text.trim()
      );
 
-     widget.onFriendAdded(newFriend);
+     widget.onFriendAdded(newFriend as String);
 
      _nameController.clear();
      _numberController.clear();

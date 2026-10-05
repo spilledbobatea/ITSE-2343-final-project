@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'package:friend_grid/home_page.dart';
 import 'package:friend_grid/add_friends_page.dart';
 
@@ -34,21 +35,34 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
-  final List<Friend> _friends = [];
+  final Map<String, Set<DateTime>> _busySchedules = {
+    'Me': {DateTime(2026, 1, 3), DateTime(2026, 1, 17), DateTime(2026, 1, 19), DateTime(2026, 1, 23)},
+    'Lily': {DateTime(2026, 1, 6), DateTime(2026, 1, 15), DateTime(2026, 1, 18), DateTime(2026, 1, 22)},
+    'Timothy': {DateTime(2026, 1, 7), DateTime(2026, 1, 22), DateTime(2026, 1, 27)}
+  };
 
-  void _addFriend(Friend friend) {
+  void _addFriend(String name) {
+    if (name.isNotEmpty && !_busySchedules.containsKey(name)) {
+      setState(() {
+        _busySchedules[name] = {};
+      });
+    }
+  }
+
+  void _toggleBusyDate(String friend, DateTime date) {
+    final key = DateTime(date.year, date.month, date.day);
     setState(() {
-      _friends.add(friend);
+      final dates = _busySchedules[friend] ?? {};
+      dates.contains(key) ? dates.remove(key) : dates.add(key);
+      _busySchedules[friend] = dates;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      HomePage(friends: _friends),
-      CurrentPage(text: "Profile"),
+    final pages = [
+      HomePage(busySchedules: _busySchedules),
       AddFriendPage(onFriendAdded: _addFriend),
-      CurrentPage(text: "Edit Schedules"),
     ];
 
     return Scaffold(
@@ -82,23 +96,9 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           NavigationDrawerDestination(icon: Icon(Icons.home_rounded), label: Text("Home")),
-          NavigationDrawerDestination(icon: Icon(Icons.account_circle_rounded), label: Text("Profile")),
           NavigationDrawerDestination(icon: Icon(Icons.emoji_people_rounded), label: Text("Add Friend")),
-          NavigationDrawerDestination(icon: Icon(Icons.schedule_rounded), label: Text("Edit Schedules")),
         ],
       ),
-    );
-  }
-}
-
-class CurrentPage extends StatelessWidget {
-  final String text;
-  const CurrentPage({super.key, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(text),
     );
   }
 }
