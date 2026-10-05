@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'add_friends_page.dart';
+import 'main.dart';
 
 class HomePage extends StatefulWidget {
-  final Map<String, Set<DateTime>> busySchedules;
-  const HomePage({super.key, required this.busySchedules});
+  final List<Friend> friends;
+  const HomePage({super.key, required this.friends});
 
   @override
   State<StatefulWidget> createState() => _HomePageState();
@@ -20,11 +21,14 @@ class _HomePageState extends State<HomePage> {
     // Drop down selection
     if (_selectedFriendFilter !=null) {
       // selected friends
-      return widget.busySchedules[_selectedFriendFilter]?.contains(key) ?? false;
+      final friend = widget.friends.firstWhere(
+          (f) => f.name == _selectedFriendFilter,
+      );
+      return friend.busyDates.contains(key);
     } else {
       // all friends
-      for (final dates in widget.busySchedules.values) {
-        if (dates.contains(key)) return true;
+      for (final friend in widget.friends) {
+        if (friend.busyDates.contains(key)) return true;
       }
       return false;
     }
@@ -45,7 +49,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final friends = widget.busySchedules.keys.toList();
     final suggestedDates = _getSuggestions();
     return SingleChildScrollView(
       child: Column(
@@ -94,10 +97,10 @@ class _HomePageState extends State<HomePage> {
                             value: null,
                             child: Text("All")
                         ),
-                        ...friends.map((friend) {
+                        ...widget.friends.map((friend) {
                             return DropdownMenuItem<String?>(
-                              value: friend,
-                              child: Text(friend),
+                              value: friend.name,
+                              child: Text(friend.name),
                             );
                         }),
                       ],

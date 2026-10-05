@@ -23,6 +23,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class Friend {
+  final String name;
+  final DateTime? bday;
+  final Set<DateTime> busyDates;
+
+  Friend({required this.name, this.bday, Set<DateTime>? busyDates}) : busyDates = busyDates ?? {};
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -35,33 +43,36 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
-  final Map<String, Set<DateTime>> _busySchedules = {
-    'Me': {DateTime(2026, 1, 3), DateTime(2026, 1, 17), DateTime(2026, 1, 19), DateTime(2026, 1, 23)},
-    'Lily': {DateTime(2026, 1, 6), DateTime(2026, 1, 15), DateTime(2026, 1, 18), DateTime(2026, 1, 22)},
-    'Timothy': {DateTime(2026, 1, 7), DateTime(2026, 1, 22), DateTime(2026, 1, 27)}
-  };
+  final List<Friend> _friends = [
+    Friend(
+      name: "Mari'A",
+      bday: DateTime(2026, 1, 12),
+      busyDates: {DateTime(2026, 1, 3), DateTime(2026, 1, 17), DateTime(2026, 1, 19), DateTime(2026, 1, 23)}
+    ),
+    Friend(
+      name: "Lily",
+      bday: DateTime(2026, 1, 18),
+      busyDates: {DateTime(2026, 1, 6), DateTime(2026, 1, 15), DateTime(2026, 1, 18), DateTime(2026, 1, 22)}
+    ),
+    Friend(
+      name: "Timothy",
+      bday: DateTime(2026, 1, 29),
+      busyDates: {DateTime(2026, 1, 7), DateTime(2026, 1, 22), DateTime(2026, 1, 27)}
+    )
+  ];
 
-  void _addFriend(String name) {
-    if (name.isNotEmpty && !_busySchedules.containsKey(name)) {
+  void _addFriend(String name, DateTime? bday) {
+    if (name.isNotEmpty && !_friends.any((f) => f.name == name)) {
       setState(() {
-        _busySchedules[name] = {};
+        _friends.add(Friend(name: name, bday: bday));
       });
     }
-  }
-
-  void _toggleBusyDate(String friend, DateTime date) {
-    final key = DateTime(date.year, date.month, date.day);
-    setState(() {
-      final dates = _busySchedules[friend] ?? {};
-      dates.contains(key) ? dates.remove(key) : dates.add(key);
-      _busySchedules[friend] = dates;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomePage(busySchedules: _busySchedules),
+      HomePage(friends: _friends),
       AddFriendPage(onFriendAdded: _addFriend),
     ];
 
